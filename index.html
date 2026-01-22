@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>TOOLS AUTO GENERATE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+  margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(135deg,#e0f2fe,#f8fafc);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto;
+}
+.card{
+  width:100%; max-width:420px; background:#fff; border-radius:22px; padding:26px;
+  box-shadow:0 25px 60px rgba(15,23,42,.15);
+}
+h1{text-align:center;font-size:20px;margin-bottom:10px}
+select,input,button{width:100%;padding:13px;margin-top:12px;border-radius:12px}
+button{border:none;font-weight:600;background:linear-gradient(135deg,#14b8a6,#0f766e);color:#fff}
+button.secondary{background:linear-gradient(135deg,#bbf7d0,#86efac);color:#065f46}
+button:disabled{background:#94a3b8}
+.preview{text-align:center;margin-top:14px}
+.preview img{max-width:100%;border-radius:14px;box-shadow:0 10px 25px rgba(0,0,0,.2)}
+#error{display:none;margin-top:12px;padding:10px;background:#fee2e2;color:#7f1d1d;border-radius:10px;font-size:13px;white-space:pre-wrap}
+footer{text-align:center;margin-top:18px;font-size:12px;color:#64748b}
+</style>
+</head>
+
+<body>
+<div class="card">
+  <h1>TOOLS AUTO GENERATE</h1>
+
+  <button onclick="loadRepos()">Ambil Repository</button>
+
+  <select id="repoSelect">
+    <option value="">— Pilih repository —</option>
+  </select>
+
+  <div class="preview">
+    <img id="imgPreview" alt="preview">
+  </div>
+
+  <button class="secondary" onclick="pickImages()">Ganti Gambar</button>
+
+  <button onclick="deploy()">Generate</button>
+
+  <div id="error"></div>
+
+  <input id="result" readonly placeholder="URL hasil deploy">
+  <button class="secondary" onclick="copy()">Copy</button>
+
+  <footer>tools by sesepuh © 2026</footer>
+</div>
+
+<script>
+/* ====== GANTI DENGAN IMAGE KAMU ====== */
+const IMAGES = [
+  "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgXpruTECYn1s41yGlABIeOnK0qyxwN2YwRFShNiUbUJpqV9WWaq1nw2f3x2wa3UA54AyF40WD_uYIU3f8McNVUexTJJ0_VdJ9upjbt-1P7VQmeQtpaMfVzpbLSWr56ihaQpFmDLGuPLytoxfwZJcvZu_6oH2ZsqXi5hLZBzyoeRwsXLuEUt6gGJTUYkAqq/s16000/1000268063.jpg",
+  "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg7_ZJ7JeJzz02WG40ZmcsN16vnuu-xCC3G9NcWRx5pfZDq_c6LIdYmUx2rplgKRSWuTyUs1MgsD1Rdn80tm6yPyc5fdvUoux2sefWWjRXzle-k7o31XODZzLNGNNnkEdQ16P9Bye0WswaKnZokYJMbvORkf0qzxAlR0tAT1TWH2y7KumA6-5uLRab37NjU/s16000/1000268062.jpg",
+  "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh_X109SK-QhlSOb1NiSyRSnY54QJNX0WKy0UsOtgMA-sYsqzk6qhC9D3WHovVRF3uK_cIMA-J1K8hWmc__ZUG_gihjOYjwBg54bZVNlDKWiNtfbTpEOvSj-Nd2_aRX_fYaiFdsZBNZdlehyo14bgl-Dxgk9qNDepHwfwNFidERYyAAjsWhWMY5_PyASPSP/s1600/1000270623.jpg",
+  "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgVt6Bj8uzv9tZc5AChsYKNjcPzFOtR8yM5WUrG3hseYZl_RrEyU_6MOsu2CtaUuKrQ7WkPvfGIGvzGxQurpR7P5rKo1aAEwsn6zXl1t-jZf4Uz0jeTdsVr_c3L5pvMNukqOTfMLaw9yVw62_fzDUs9bSIQmvQ39OmLEp0k6H-nJS_HLp48-5CA1QYRdU6Y/s1600/1000271008.jpg",
+  "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiD9jc7nYvo_944u4ka-rzQr_ANwiHMqqjkYOo8ljJlXA8XNk-iSCWa5cJsffZvy6pseIhA7QtgylihyphenhyphenX7Khyi_f9z7fe3W9c286lelnxeSb3USxU5iJckCvZ5r7gY_ucnqw6BFclmX7n2iV4H3kxI4w0d9OYCce7Wvs1bx5eNvgbF8RteGPXROeT3z_Fbm/s1600/1000272909.jpg",
+  "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEia5EZN81KImOLwCf4Maw9Rx93SMzi-Y1sl4FlymVs-p7A7fzpnnwzV3PPTRw95HtjanyPfOC7wGpR7PWlJbeLoK1fmtI5Siziuo1SMQJDqnwd7BZhjbHDuErzJIXkaXqw6Mp8WRohL9fyh93oJhDEgPbpV0ErLx6V5mA15iSO1gWlduuNVAOwxo7Ev455P/s1600/1000273276.jpg",
+  "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhXEf4-02b6Cykg8pIfJW9VUzBa_hQxtjaVpJjx2RlnFDVbrEPkFi_wK-XQmMWIq0zE4WYKi0FSjeSbiO9ziggYqTuPY2sHubNLYhdPDoSHxEK41uXG0XYXk9h9RgqYIc1OiLPdAdiuNzKpKn_8Vezo5jmkaA_eV9ZGmoY7dU2AdWrZ_zZvnCtdp8bq26nx/s1600/1000273277.jpg",
+  "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg8Dww4NmXkBhQklIJkpCwUwSGlpEwRlO_v9xk2Sif9c0IqxCkx9_2Bh2Trg-Ghidlqty_ZxX_jvdVsyQGNp7fGaek0EzoQ-i1_DMglfA9ATJzhn2yfmWbOD9HItFSPAgq24eM6KMRLxwNNxeLaLuo4N8VDwUurVtBBYhmAw5Lhi7K_MhE2fKzWxiMqNuXv/s1600/1000281899.jpg",
+  "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgLmLDHXtTQrS45ZtnxZdnkIcWi1JJR1sJeC2OnzAO2V9zH1h7gaiAvNpkiaQIk1kwulp84CqoKfEDxnV3cnGHSFBgSrLoL6__uvdsiH392xvwxdFQIiws2OL1E2dCR_4Csa4iVdnNInHkrBmo-i-U8CGaI9mYrMDndq1fWogmCCUQGS4p-yFlA253eOfmY/s16000/1000278957.jpg",
+  "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhY2U1nNExdEb1EmswodAdiZqFJvBi-j5qmXYihXFcnIUndSXE3u4zxS6yuKvKFCL6Y2dh0hdqk3Oc0oZZ1tg5pYWMzcRoaIlT3NVw0pZ7fldLwJCdE5mfn8UNtwDTnksPulL9NK3yG5cp7HYdKjmB8rdyv7kAt-B5Jrlu3P5o0xUbwIC8TDOXWpyKjimZN/s1600/1000277246.jpg",
+  "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEidszofq0hPVdy8MrDFlw10ZNYRKSIlzgHNo8ho0HcUNttAY0YeF9KdrgTOep_GvG7-_pEfkVj1kHyPcZk-si4QPmEqnjWfG8tTgeGNePFuLpoOlJm52JETg2wKv1qQMELfg8zMTtZXM6bNH9Ldbowbc0PT4k87Bce8esFNXzNVxboP6f6edDZOt4evNizd/s1600/1000277491.jpg"
+];
+
+/* ====== STATE ====== */
+let selectedImages = [];
+const imgPreview = document.getElementById('imgPreview');
+const repoSelect = document.getElementById('repoSelect');
+const errorBox = document.getElementById('error');
+const result = document.getElementById('result');
+
+function showError(t){ errorBox.style.display='block'; errorBox.textContent=t; }
+function clearError(){ errorBox.style.display='none'; errorBox.textContent=''; }
+
+/* Pilih beberapa gambar acak (rotator) */
+function pickImages(){
+  selectedImages = [...IMAGES].sort(()=>0.5-Math.random()).slice(0, 3); // jumlah rotasi
+  imgPreview.src = selectedImages[0];
+}
+pickImages();
+
+/* Ambil repo GitHub */
+async function loadRepos(){
+  clearError();
+  const r = await fetch('/api/github');
+  const d = await r.json();
+  repoSelect.innerHTML='<option value="">— Pilih repository —</option>';
+  d.forEach(x=>{
+    const o=document.createElement('option');
+    o.value=x.full_name;
+    o.textContent=x.full_name;
+    repoSelect.appendChild(o);
+  });
+}
+
+/* Deploy ke Netlify + inject rotator */
+async function deploy(){
+  clearError(); result.value='';
+  if(!repoSelect.value){ showError('Repository belum dipilih'); return; }
+
+  const r = await fetch('/api/deploy-netlify',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      repoFullName: repoSelect.value,
+      images: selectedImages
+    })
+  });
+  const d = await r.json();
+  if(!d.url){ showError(JSON.stringify(d,null,2)); return; }
+  result.value = d.url;
+}
+
+function copy(){
+  if(!result.value){ showError('Belum ada link'); return; }
+  navigator.clipboard.writeText(result.value);
+  alert('Link disalin');
+}
+</script>
+</body>
+</html>
